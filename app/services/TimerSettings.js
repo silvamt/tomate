@@ -19,7 +19,7 @@
 
         // on start up set values to localStorage
         var times = {
-            shortBreak: Storage.get('shortBreak') || 3,
+            shortBreak: Storage.get('shortBreak') || 5,
             longBreak: Storage.get('longBreak') || 15,
             active: Storage.get('active') || 25
         };
