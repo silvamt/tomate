@@ -21,9 +21,9 @@
             title: 'Tomate',
             tag: 'tomate',
             dismiss: 3000,
-            sound: '/assets/alarm.mp3',
-            active: '/assets/active-clock.png',
-            break: '/assets/break-clock.png'
+            sound: './assets/alarm.mp3',
+            active: './assets/active-clock.png',
+            break: './assets/break-clock.png'
         };
 
         /**

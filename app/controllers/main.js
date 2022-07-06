@@ -26,7 +26,7 @@
             paused: true,
             btn: 'paused',
             background: 'active',
-            settings: true,
+            settings: false,
             allowNotifactions: true
         };
 
@@ -179,7 +179,7 @@
             vm.pomodoro.cancelTimer();
 
             // update the UI state
-            vm.states.started = false;
+            vm.states.started = true;
             vm.timerState = vm.setTimerState();
             vm.time = TimeParser.parse(vm.pomodoro.getDuration());
         };
