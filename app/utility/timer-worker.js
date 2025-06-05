@@ -4,7 +4,8 @@
 
 // store the timer so we can clear it
 var timer = null;
-var time = null;
+var time = null; // remaining time in seconds
+var endTime = null; // timestamp when the timer should end
 var SECOND = 1000;
 
 self.onmessage = function(e) {
@@ -32,9 +33,21 @@ self.onmessage = function(e) {
  */
 function startTimer(value) {
 
-    time = (value) ? value - 1 : time;
+    if (value) {
+        time = value;
+    }
+
+    if (time === null) {
+        return;
+    }
+
+    var start = Date.now();
+    endTime = start + (time * 1000);
 
     timer = setInterval(function() {
+
+        var now = Date.now();
+        time = Math.max(Math.ceil((endTime - now) / 1000), 0);
 
         postMessage({
             message: 'tick',
@@ -49,8 +62,6 @@ function startTimer(value) {
 
             clearTimer();
         }
-
-        time--;
 
     }, SECOND);
 
@@ -71,4 +82,5 @@ function clearTimer() {
 
     clearInterval(timer);
     timer = null;
+    endTime = null;
 }
