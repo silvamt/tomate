@@ -33,7 +33,7 @@
         }
 
         /**
-         * retrieve the value from localstore
+         * retrieve the value from localStorage
          *
          * @param  {String} key : key to access data
          * @return {String}  localStorage can only store Strings

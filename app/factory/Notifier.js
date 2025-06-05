@@ -9,7 +9,7 @@
      * @ngdoc factory
      * @name pomodoro.factory: Notifier
      * @requires '$window', '$timeout'
-     * @description Handles creating audio and desktop notifcations,
+     * @description Handles creating audio and desktop notifications,
      * messages can be set on the desktop notification
      * @author Peter Redmond https://github.com/httpete-ire
      *
@@ -28,7 +28,7 @@
 
         /**
          * the inner object that handles creating
-         * audio and desktop notifcations
+         * audio and desktop notifications
          *
          * @param  {Object} opts : options object
          */
@@ -36,7 +36,7 @@
             /*jshint validthis:true */
             this.settings = opts || {};
             this.permission = false;
-            this._notifaction = null;
+            this._notification = null;
             this._audio = new Audio(notifierSettings.sound);
         }
 
@@ -61,33 +61,33 @@
         };
 
         /**
-         * cerate a new instance of the Notifaction object and set
+         * create a new instance of the Notification object and set
          * properties on it, also bind listeners for 'close'
          * and 'click' events
          *
          * @param {String} msg : Message to output to notification
          */
-        _notifier.prototype.setNotifaction = function(msg, icon) {
+_notifier.prototype.setNotification = function(msg, icon) {
 
             var self = this;
 
-            // set notifaction
-            var n = this._notifaction = new Notification(notifierSettings.title, {
+            // set notification
+            var n = this._notification = new Notification(notifierSettings.title, {
                 body: msg,
                 tag: notifierSettings.tag,
                 icon: notifierSettings[icon]
             });
 
-            // close notifaction after a timer
-            this._notifaction.onshow = function() {
+            // close notification after a timer
+            this._notification.onshow = function() {
                 // call the close method and bind the value of this to
                 // be the notifier
                 $timeout(n.close.bind(n), notifierSettings.dismiss);
             };
 
             // stop the alarm when notification is clicked
-            this._notifaction.onclose = stopAudio;
-            this._notifaction.onclick = stopAudio;
+            this._notification.onclose = stopAudio;
+            this._notification.onclick = stopAudio;
 
             // pause the alarm and reset it
             function stopAudio() {

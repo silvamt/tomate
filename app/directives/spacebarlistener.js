@@ -30,7 +30,7 @@
 
         /**
          * link function to bind listeners to keydown events on
-         * the
+         * the document
          *
          * @param  {Object} scope
          */
