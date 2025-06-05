@@ -27,7 +27,7 @@
             btn: 'paused',
             background: 'active',
             settings: false,
-            allowNotifactions: true
+            allowNotifications: true
         };
 
         vm.models = {
@@ -53,14 +53,14 @@
             // set the time to that of the pomodoro
             vm.time = TimeParser.parse(vm.pomodoro.getDuration());
 
-            // see if allowNotifactionss are supported
-            vm.states.allowNotifactions = vm.pomodoro.noticaftions();
+            // see if notifications are supported
+            vm.states.allowNotifications = vm.pomodoro.notifications();
 
             // set btn text
             vm.timerState = vm.setTimerState();
 
-            // set weither the timer should notify when complete
-            vm.pomodoro.allowNotifaction(vm.models.desktopNotification, vm.models.audioNotifications);
+            // set whether the timer should notify when complete
+            vm.pomodoro.allowNotification(vm.models.desktopNotification, vm.models.audioNotifications);
         };
 
         /**
@@ -145,9 +145,9 @@
         };
 
         /**
-         * ask the user to grant permission for desktop notifactions, store
+         * ask the user to grant permission for desktop notifications, store
          * the result in localStorage and tell the pomodoro to either allow or
-         * disallow both desktop and audio notifcations
+         * disallow both desktop and audio notifications
          */
         vm.allowDesktopNotifications = function() {
             // ask the user to allow desktop notifications
@@ -156,14 +156,14 @@
             // store the result in localStorage to persist the settings
             TimerSettings.setNotification('desktop', vm.models.desktopNotification);
 
-            // toggle the notifer
-            vm.pomodoro.allowNotifaction(vm.models.desktopNotification);
+            // toggle the notifier
+            vm.pomodoro.allowNotification(vm.models.desktopNotification);
         };
 
         /**
-         * toggle to allow audio notifactions when timer complete, store
+         * toggle to allow audio notifications when timer completes, store
          * the result in localStorage and notify pomodoro to either
-         * allow audio notifactions
+         * allow or disallow audio notifications
          */
         vm.toggleAudioNotifications = function() {
 

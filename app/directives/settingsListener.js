@@ -28,7 +28,7 @@
             link: link
         };
 
-        // bind a keydown event that will clode the settings panel if it
+        // bind a keydown event that will close the settings panel if it
         // is open
         function link(scope, elem, attr) {
             $document.on('keydown', function(e) {

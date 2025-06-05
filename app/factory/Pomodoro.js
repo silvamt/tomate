@@ -54,7 +54,7 @@
                 this._count++;
             }
 
-            // if notifactions are on on set message
+            // if notifications are on set message
             if (this._desktopNotification) {
                 this.setDesktopNotification();
             }
@@ -66,7 +66,7 @@
 
             type = (this._isBreak) ? 'active' : 'break';
 
-            // brodacast type change
+            // broadcast type change
             $rootScope.$broadcast('typeChange', {
                 type: type
             });
@@ -132,7 +132,7 @@
 
         /**
          * resume the timer by calling the start method on it without passing
-         * a time as a parmaeter
+         * a time as a parameter
          */
         _pomodoro.prototype.resume = function() {
             this._isPaused = false;
@@ -175,16 +175,16 @@
         };
 
         /**
-         * check if desktop notifactions are supported
+         * check if desktop notifications are supported
          */
-        _pomodoro.prototype.noticaftions = function() {
+        _pomodoro.prototype.notifications = function() {
             return this._notifier.isSupported();
         };
 
         /**
          * set the notifications on the pomodoro object
          */
-        _pomodoro.prototype.allowNotifaction = function(desktop, audio) {
+        _pomodoro.prototype.allowNotification = function(desktop, audio) {
             this._desktopNotification = desktop;
             this._audioNotification = audio;
         };
@@ -198,13 +198,13 @@
 
                 // check to see if its a long or short break
                 if (this._count % 4 === 0) {
-                    this._notifier.setNotifaction(TimerSettings.getMsg('longBreak'), 'break');
+                    this._notifier.setNotification(TimerSettings.getMsg('longBreak'), 'break');
                 } else {
-                    this._notifier.setNotifaction(TimerSettings.getMsg('shortBreak'), 'break');
+                    this._notifier.setNotification(TimerSettings.getMsg('shortBreak'), 'break');
                 }
 
             } else {
-                this._notifier.setNotifaction(TimerSettings.getMsg('active'), 'active');
+                this._notifier.setNotification(TimerSettings.getMsg('active'), 'active');
             }
 
         };

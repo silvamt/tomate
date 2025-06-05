@@ -73,14 +73,14 @@
             var time = times[type];
 
             if (type !== 'active') {
-                return 'aproveite os seus ' + time + ' minuntos de parada';
+                return 'aproveite os seus ' + time + ' minutos de parada';
             } else {
                 return 'continue com o bom trabalho, falta apenas ' + time + ' minutos para sua próxima parada';
             }
         }
 
         /**
-         * store if the type of notifcation ('desktop', 'audio') should be set
+         * store if the type of notification ('desktop', 'audio') should be set
          *
          * @param {String} type : timer type eg 'shortBreak'
          * @param {boolean} value :: value to set, stored as string
@@ -90,9 +90,9 @@
         }
 
         /**
-         * retrieve if the notifcation is active or not from localStorage,
+         * retrieve if the notification is active or not from localStorage,
          * localStorage can only store Strings so boolean values are converted
-         * to string on input, a simple comparision is used to return a valid
+         * to string on input, a simple comparison is used to return a valid
          * boolean
          *
          * @param  {String} type : timer type eg 'shortBreak'
