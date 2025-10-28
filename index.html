@@ -1,47 +1,457 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="pomodoro" ng-controller="MainCtrl as mainCtrl" ng-init="mainCtrl.init();">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
-    <title ng-bind="mainCtrl.time"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOMATATA - 25:00</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <link rel="shortcut icon" href="{{mainCtrl.states.background}}.ico" />
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: background 0.5s ease;
+        }
 
-    <!-- bower:css -->
-    <!-- endbower -->
+        body.trabalho {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
 
-    <!-- inject:css -->
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="./css/main.css">
-    <!-- endinject -->
+        body.pausa-curta {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
 
+        body.pausa-longa {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 350px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 32px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer {
+            font-size: 72px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pomodoros {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tomato-icons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .tomato {
+            font-size: 24px;
+            opacity: 0.3;
+        }
+
+        .tomato.completed {
+            opacity: 1;
+            animation: pop 0.3s ease;
+        }
+
+        @keyframes pop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #5a67d8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #4c51bf;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(90, 103, 216, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.pausar {
+            background-color: #ed8936;
+        }
+
+        button.pausar:hover:not(:disabled) {
+            background-color: #dd6b20;
+        }
+
+        button.reiniciar {
+            background-color: #e53e3e;
+        }
+
+        button.reiniciar:hover:not(:disabled) {
+            background-color: #c53030;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5a67d8, #667eea);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .stats {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
 </head>
-<body ng-class="[mainCtrl.states.background]">
 
-    <div ng-include src="'./app/views/main.html'"></div>
+<body>
+    <div class="container">
+        <h1>🍅 TOMATATA</h1>
+        <div class="status" id="status">Pronto para começar</div>
+        <div class="timer" id="timer">25:00</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="pomodoros">
+            <div>
+                <div>Pomodoros concluídos: <strong id="pomodoro-count">0</strong></div>
+                <div class="tomato-icons" id="tomato-icons"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="btn-iniciar" onclick="iniciarPomodoro()">Iniciar</button>
+            <button id="btn-pausar" class="pausar" onclick="pausarPomodoro()" disabled>Pausar</button>
+            <button id="btn-reiniciar" class="reiniciar" onclick="reiniciarPomodoro()">Reiniciar</button>
+        </div>
+        <div class="stats" id="stats">
+            Tempo total focado hoje: 0 min
+        </div>
+    </div>
 
-    <!-- bower:js -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
-    <!-- endbower -->
+    <script>
+        // Constantes
+        const TEMPO_POMODORO = 25 * 60;
+        const TEMPO_PAUSA_CURTA = 5 * 60;
+        const TEMPO_PAUSA_LONGA = 15 * 60;
+        const POMODOROS_PAUSA_LONGA = 4;
 
-    <!-- inject:js -->
-    <script src="app/app.js"></script>
+        // Sons em Data URI (beep simples)
+        const SOM_COMPLETE = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMXGx8jJysvMzc7P0NHS09TV1tfY2drb3N3e3+Dh4uPk5ebn6Onq6+zt7u/w8fLz9PX29/j5+vv8/f7/AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==';
 
-    <script src="app/controllers/main.js"></script>
+        // Variáveis de estado
+        let tempoRestante = TEMPO_POMODORO;
+        let tempoTotal = TEMPO_POMODORO;
+        let intervalo = null;
+        let emExecucao = false;
+        let emIntervalo = false;
+        let pomodorosConcluidos = 0;
+        let tempoFocadoHoje = 0;
+        let estado = 'pronto'; // pronto, trabalho, pausa-curta, pausa-longa
 
-    <script src="app/directives/spacebarlistener.js"></script>
-    <script src="app/directives/settingsListener.js"></script>
-    <script src="app/directives/toggle.js"></script>
-    <script src="app/directives/pomodoroRange.js"></script>
+        // Elementos DOM
+        const timerDisplay = document.getElementById('timer');
+        const statusDisplay = document.getElementById('status');
+        const progressBar = document.getElementById('progress');
+        const pomodoroCount = document.getElementById('pomodoro-count');
+        const tomatoIcons = document.getElementById('tomato-icons');
+        const statsDisplay = document.getElementById('stats');
+        const btnIniciar = document.getElementById('btn-iniciar');
+        const btnPausar = document.getElementById('btn-pausar');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
 
-    <script src="app/factory/Notifier.js"></script>
-    <script src="app/factory/Pomodoro.js"></script>
+        // Carregar dados salvos
+        function carregarDados() {
+            const dados = localStorage.getItem('tomatata-data');
+            if (dados) {
+                const parsed = JSON.parse(dados);
+                const hoje = new Date().toDateString();
+                if (parsed.data === hoje) {
+                    pomodorosConcluidos = parsed.pomodoros || 0;
+                    tempoFocadoHoje = parsed.tempoFocado || 0;
+                    atualizarPomodoros();
+                    atualizarStats();
+                }
+            }
+        }
 
-    <script src="app/services/TimeParser.js"></script>
-    <script src="app/services/Timer.js"></script>
-    <script src="app/services/TimerSettings.js"></script>
-    <script src="app/services/Storage.js"></script>
+        // Salvar dados
+        function salvarDados() {
+            const dados = {
+                data: new Date().toDateString(),
+                pomodoros: pomodorosConcluidos,
+                tempoFocado: tempoFocadoHoje
+            };
+            localStorage.setItem('tomatata-data', JSON.stringify(dados));
+        }
 
-    <!-- endinject -->
+        // Solicitar permissão para notificações
+        function solicitarPermissaoNotificacao() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
 
+        // Enviar notificação
+        function enviarNotificacao(titulo, corpo) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(titulo, {
+                    body: corpo,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">🍅</text></svg>',
+                    tag: 'tomatata'
+                });
+            }
+        }
+
+        // Emitir som
+        function emitirSom() {
+            const audio = new Audio(SOM_COMPLETE);
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log('Erro ao reproduzir som:', e));
+        }
+
+        // Atualizar timer
+        function atualizarTimer() {
+            const minutos = Math.floor(tempoRestante / 60);
+            const segundos = tempoRestante % 60;
+            const tempoFormatado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+            timerDisplay.textContent = tempoFormatado;
+            document.title = `TOMATATA - ${tempoFormatado}`;
+            
+            // Atualizar barra de progresso
+            const progresso = ((tempoTotal - tempoRestante) / tempoTotal) * 100;
+            progressBar.style.width = `${progresso}%`;
+        }
+
+        // Atualizar status
+        function atualizarStatus(texto) {
+            statusDisplay.textContent = texto;
+        }
+
+        // Atualizar contador de pomodoros
+        function atualizarPomodoros() {
+            pomodoroCount.textContent = pomodorosConcluidos;
+            
+            // Atualizar ícones de tomate
+            tomatoIcons.innerHTML = '';
+            for (let i = 0; i < POMODOROS_PAUSA_LONGA; i++) {
+                const tomato = document.createElement('span');
+                tomato.className = 'tomato';
+                tomato.textContent = '🍅';
+                if (i < pomodorosConcluidos % POMODOROS_PAUSA_LONGA) {
+                    tomato.classList.add('completed');
+                }
+                tomatoIcons.appendChild(tomato);
+            }
+        }
+
+        // Atualizar estatísticas
+        function atualizarStats() {
+            const horas = Math.floor(tempoFocadoHoje / 60);
+            const minutos = tempoFocadoHoje % 60;
+            let textoTempo = '';
+            if (horas > 0) {
+                textoTempo = `${horas}h ${minutos}min`;
+            } else {
+                textoTempo = `${minutos} min`;
+            }
+            statsDisplay.textContent = `Tempo total focado hoje: ${textoTempo}`;
+        }
+
+        // Atualizar tema
+        function atualizarTema(novoEstado) {
+            document.body.className = novoEstado;
+            estado = novoEstado;
+        }
+
+        // Atualizar botões
+        function atualizarBotoes() {
+            if (emExecucao) {
+                btnIniciar.disabled = true;
+                btnPausar.disabled = false;
+                btnReiniciar.disabled = false;
+            } else {
+                btnIniciar.disabled = false;
+                btnPausar.disabled = true;
+                btnReiniciar.disabled = false;
+            }
+        }
+
+        // Iniciar pomodoro
+        function iniciarPomodoro() {
+            if (emExecucao) return;
+            
+            emExecucao = true;
+            solicitarPermissaoNotificacao();
+            
+            if (!emIntervalo && estado === 'pronto') {
+                atualizarTema('trabalho');
+                atualizarStatus('🎯 Foco total! Trabalhe por 25 minutos');
+            }
+            
+            atualizarBotoes();
+            
+            intervalo = setInterval(() => {
+                if (tempoRestante > 0) {
+                    tempoRestante--;
+                    atualizarTimer();
+                } else {
+                    finalizarPeriodo();
+                }
+            }, 1000);
+        }
+
+        // Pausar pomodoro
+        function pausarPomodoro() {
+            if (!emExecucao) return;
+            
+            clearInterval(intervalo);
+            intervalo = null;
+            emExecucao = false;
+            atualizarStatus('⏸️ Pausado');
+            atualizarBotoes();
+        }
+
+        // Reiniciar pomodoro
+        function reiniciarPomodoro() {
+            clearInterval(intervalo);
+            intervalo = null;
+            emExecucao = false;
+            emIntervalo = false;
+            tempoRestante = TEMPO_POMODORO;
+            tempoTotal = TEMPO_POMODORO;
+            atualizarTema('pronto');
+            atualizarStatus('Pronto para começar');
+            atualizarTimer();
+            atualizarBotoes();
+        }
+
+        // Finalizar período
+        function finalizarPeriodo() {
+            clearInterval(intervalo);
+            intervalo = null;
+            emExecucao = false;
+            emitirSom();
+            
+            if (!emIntervalo) {
+                // Pomodoro concluído
+                pomodorosConcluidos++;
+                tempoFocadoHoje += 25;
+                atualizarPomodoros();
+                atualizarStats();
+                salvarDados();
+                
+                if (pomodorosConcluidos % POMODOROS_PAUSA_LONGA === 0) {
+                    // Pausa longa
+                    tempoRestante = TEMPO_PAUSA_LONGA;
+                    tempoTotal = TEMPO_PAUSA_LONGA;
+                    atualizarTema('pausa-longa');
+                    atualizarStatus('🎉 Pausa longa! Descanse por 15 minutos');
+                    enviarNotificacao('🎉 Parabéns!', `Você completou ${POMODOROS_PAUSA_LONGA} Pomodoros! Descanse por 15 minutos.`);
+                } else {
+                    // Pausa curta
+                    tempoRestante = TEMPO_PAUSA_CURTA;
+                    tempoTotal = TEMPO_PAUSA_CURTA;
+                    atualizarTema('pausa-curta');
+                    atualizarStatus('☕ Pausa curta! Descanse por 5 minutos');
+                    enviarNotificacao('⏰ Pomodoro concluído!', 'Faça uma pausa de 5 minutos.');
+                }
+                emIntervalo = true;
+            } else {
+                // Intervalo concluído
+                tempoRestante = TEMPO_POMODORO;
+                tempoTotal = TEMPO_POMODORO;
+                emIntervalo = false;
+                atualizarTema('trabalho');
+                atualizarStatus('🎯 Intervalo concluído! Pronto para trabalhar?');
+                enviarNotificacao('✅ Intervalo concluído!', 'Hora de voltar ao trabalho!');
+            }
+            
+            atualizarTimer();
+            atualizarBotoes();
+        }
+
+        // Inicialização
+        carregarDados();
+        atualizarTimer();
+        atualizarPomodoros();
+        atualizarStats();
+        atualizarBotoes();
+    </script>
 </body>
+
 </html>
