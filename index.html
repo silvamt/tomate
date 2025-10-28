@@ -222,6 +222,8 @@
         let pomodorosConcluidos = 0;
         let tempoFocadoHoje = 0;
         let estado = 'pronto'; // pronto, trabalho, pausa-curta, pausa-longa
+        let timestampInicio = null; // Timestamp de quando o timer iniciou
+        let tempoDecorridoAntes = 0; // Tempo já decorrido antes de pausar
 
         // Elementos DOM
         const timerDisplay = document.getElementById('timer');
@@ -297,6 +299,19 @@
             progressBar.style.width = `${progresso}%`;
         }
 
+        // Calcular tempo restante baseado em timestamp
+        function calcularTempoRestante() {
+            if (!timestampInicio) return;
+            
+            const agora = Date.now();
+            const tempoDecorrido = Math.floor((agora - timestampInicio) / 1000) + tempoDecorridoAntes;
+            tempoRestante = tempoTotal - tempoDecorrido;
+            
+            if (tempoRestante < 0) {
+                tempoRestante = 0;
+            }
+        }
+
         // Atualizar status
         function atualizarStatus(texto) {
             statusDisplay.textContent = texto;
@@ -363,11 +378,15 @@
                 atualizarStatus('🎯 Foco total! Trabalhe por 25 minutos');
             }
             
+            // Iniciar timestamp
+            timestampInicio = Date.now();
+            
             atualizarBotoes();
             
             intervalo = setInterval(() => {
+                calcularTempoRestante();
+                
                 if (tempoRestante > 0) {
-                    tempoRestante--;
                     atualizarTimer();
                 } else {
                     finalizarPeriodo();
@@ -382,6 +401,14 @@
             clearInterval(intervalo);
             intervalo = null;
             emExecucao = false;
+            
+            // Salvar tempo decorrido
+            if (timestampInicio) {
+                const agora = Date.now();
+                tempoDecorridoAntes += Math.floor((agora - timestampInicio) / 1000);
+                timestampInicio = null;
+            }
+            
             atualizarStatus('⏸️ Pausado');
             atualizarBotoes();
         }
@@ -394,6 +421,8 @@
             emIntervalo = false;
             tempoRestante = TEMPO_POMODORO;
             tempoTotal = TEMPO_POMODORO;
+            timestampInicio = null;
+            tempoDecorridoAntes = 0;
             atualizarTema('pronto');
             atualizarStatus('Pronto para começar');
             atualizarTimer();
@@ -405,6 +434,8 @@
             clearInterval(intervalo);
             intervalo = null;
             emExecucao = false;
+            timestampInicio = null;
+            tempoDecorridoAntes = 0;
             emitirSom();
             
             if (!emIntervalo) {
@@ -444,6 +475,20 @@
             atualizarTimer();
             atualizarBotoes();
         }
+
+        // Detectar quando a página volta a ficar visível
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && emExecucao) {
+                // Página voltou a ficar visível, recalcular tempo
+                calcularTempoRestante();
+                atualizarTimer();
+                
+                // Se o tempo acabou enquanto estava em segundo plano
+                if (tempoRestante <= 0) {
+                    finalizarPeriodo();
+                }
+            }
+        });
 
         // Inicialização
         carregarDados();
