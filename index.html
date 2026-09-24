@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOMATATA - 25:00</title>
+    <link rel="icon" id="favicon" href="data:,">
     <style>
         :root {
             --bg-trabalho: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -15,10 +16,13 @@
             --texto-secundario: #4b5563;
             --roxo: #5a67d8;
             --roxo-escuro: #4c51bf;
-            --laranja: #ed8936;
-            --laranja-escuro: #dd6b20;
-            --vermelho: #e53e3e;
-            --vermelho-escuro: #c53030;
+            --laranja: #c05621;
+            --laranja-escuro: #9c4221;
+            --vermelho: #c53030;
+            --vermelho-escuro: #9b2c2c;
+            --cinza: #4a5568;
+            --cinza-escuro: #2d3748;
+            --borda: #e2e8f0;
         }
 
         * { box-sizing: border-box; }
@@ -30,7 +34,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 24px;
+            padding: 16px;
             background: var(--bg-pronto);
             transition: background 0.5s ease;
         }
@@ -42,10 +46,9 @@
         .container {
             text-align: center;
             background: var(--card);
-            padding: 40px;
+            padding: 32px clamp(20px, 6vw, 40px);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
-            min-width: 350px;
             max-width: 420px;
             width: 100%;
             backdrop-filter: blur(10px);
@@ -68,7 +71,7 @@
         }
 
         .timer {
-            font-size: 72px;
+            font-size: clamp(52px, 17vw, 72px);
             font-weight: bold;
             margin-bottom: 16px;
             color: var(--texto-primario);
@@ -76,14 +79,27 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--borda);
+            border-radius: 4px;
+            margin: 0 0 22px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #5a67d8, #667eea);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
         .pomodoros {
             font-size: 18px;
             margin-bottom: 28px;
             color: var(--texto-primario);
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            align-items: center;
         }
 
         .tomato-icons {
@@ -91,6 +107,7 @@
             gap: 6px;
             margin-top: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .tomato {
@@ -122,13 +139,17 @@
             border: none;
             padding: 12px 20px;
             font-size: 15px;
+            font-family: inherit;
             cursor: pointer;
             border-radius: 10px;
             font-weight: 700;
             transition: all 0.25s ease;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            min-width: 120px;
+        }
+
+        .controls button {
+            flex: 1 1 120px;
         }
 
         button:hover:not(:disabled) {
@@ -140,111 +161,296 @@
         button:active:not(:disabled) { transform: translateY(0); }
         button:disabled { opacity: 0.55; cursor: not-allowed; }
 
+        button:focus-visible,
+        summary:focus-visible,
+        input:focus-visible {
+            outline: 3px solid var(--texto-primario);
+            outline-offset: 2px;
+        }
+
         button.pausar { background-color: var(--laranja); }
-        button.pausar:hover:not(:disabled) { background-color: var(--laranja-escuro); }
+        button.pausar:hover:not(:disabled) { background-color: var(--laranja-escuro); box-shadow: 0 8px 18px rgba(192, 86, 33, 0.35); }
 
         button.reiniciar { background-color: var(--vermelho); }
-        button.reiniciar:hover:not(:disabled) { background-color: var(--vermelho-escuro); }
+        button.reiniciar:hover:not(:disabled) { background-color: var(--vermelho-escuro); box-shadow: 0 8px 18px rgba(197, 48, 48, 0.35); }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background-color: #e2e8f0;
-            border-radius: 4px;
-            margin-top: 18px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #5a67d8, #667eea);
-            transition: width 0.3s ease;
-            border-radius: 4px;
-        }
+        button.secundario { background-color: var(--cinza); }
+        button.secundario:hover:not(:disabled) { background-color: var(--cinza-escuro); box-shadow: 0 8px 18px rgba(74, 85, 104, 0.35); }
 
         .stats {
-            margin-top: 20px;
+            margin-top: 22px;
             padding-top: 18px;
-            border-top: 2px solid #e2e8f0;
+            border-top: 2px solid var(--borda);
             font-size: 14px;
             color: var(--texto-secundario);
+        }
+
+        .config {
+            margin-top: 16px;
+            text-align: left;
+            font-size: 14px;
+            color: var(--texto-secundario);
+        }
+
+        .config summary {
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .config-grid {
+            display: grid;
+            gap: 10px;
+            margin: 14px 0;
+        }
+
+        .config-grid label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .config-grid input {
+            width: 76px;
+            padding: 6px 8px;
+            font-size: 15px;
+            font-family: inherit;
+            border: 1px solid #a0aec0;
+            border-radius: 8px;
+            color: var(--texto-primario);
+            background: #fff;
+        }
+
+        .config button {
+            width: 100%;
+            font-size: 13px;
+            padding: 10px 14px;
+        }
+
+        .atalhos {
+            margin: 14px 0 0;
+            font-size: 12px;
+            color: var(--texto-secundario);
+        }
+
+        kbd {
+            font-family: inherit;
+            font-weight: 700;
+            padding: 1px 6px;
+            border: 1px solid #a0aec0;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 aria-live="polite">🍅 TOMATATA</h1>
+        <h1>🍅 TOMATATA</h1>
         <div class="status" id="status" aria-live="polite">Pronto para começar</div>
-        <div class="timer" id="timer" aria-live="polite">25:00</div>
-        <div class="progress-bar" aria-hidden="true">
+        <div class="timer" id="timer" role="timer">25:00</div>
+        <div class="progress-bar" id="progress-bar" role="progressbar" aria-label="Progresso do período" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div class="progress-fill" id="progress"></div>
         </div>
         <div class="pomodoros">
-            <div>
-                <div>Pomodoros concluídos: <strong id="pomodoro-count">0</strong></div>
-                <div class="tomato-icons" id="tomato-icons" aria-label="Progresso de pomodoros" role="presentation"></div>
-            </div>
+            <div>Pomodoros concluídos: <strong id="pomodoro-count">0</strong></div>
+            <div class="tomato-icons" id="tomato-icons" role="img"></div>
         </div>
         <div class="controls">
-            <button id="btn-iniciar" onclick="iniciarPomodoro()">Iniciar</button>
-            <button id="btn-pausar" class="pausar" onclick="pausarPomodoro()" disabled>Pausar</button>
-            <button id="btn-reiniciar" class="reiniciar" onclick="reiniciarPomodoro()">Reiniciar</button>
+            <button type="button" id="btn-iniciar">Iniciar</button>
+            <button type="button" id="btn-pausar" class="pausar" disabled>Pausar</button>
+            <button type="button" id="btn-pular" class="secundario">Pular</button>
+            <button type="button" id="btn-reiniciar" class="reiniciar">Reiniciar</button>
         </div>
-        <div class="stats" id="stats">
-            Tempo total focado hoje: 0 min
-        </div>
+        <div class="stats" id="stats">Tempo total focado hoje: 0 min</div>
+
+        <details class="config">
+            <summary>⚙️ Configurações</summary>
+            <div class="config-grid">
+                <label>Foco (min) <input type="number" data-config="foco" min="1" max="120" inputmode="numeric"></label>
+                <label>Pausa curta (min) <input type="number" data-config="pausaCurta" min="1" max="120" inputmode="numeric"></label>
+                <label>Pausa longa (min) <input type="number" data-config="pausaLonga" min="1" max="120" inputmode="numeric"></label>
+                <label>Pomodoros até a pausa longa <input type="number" data-config="ciclo" min="1" max="12" inputmode="numeric"></label>
+            </div>
+            <button type="button" id="btn-zerar" class="secundario">Zerar estatísticas de hoje</button>
+        </details>
+
+        <p class="atalhos"><kbd>Espaço</kbd> iniciar/pausar · <kbd>R</kbd> reiniciar · <kbd>S</kbd> pular</p>
     </div>
 
     <script>
-        const TEMPO_POMODORO = 25 * 60;
-        const TEMPO_PAUSA_CURTA = 5 * 60;
-        const TEMPO_PAUSA_LONGA = 15 * 60;
-        const POMODOROS_PAUSA_LONGA = 4;
+        const CHAVE_DADOS = "tomatata-data";
+        const CHAVE_TIMER = "tomatata-timer";
+        const CHAVE_CONFIG = "tomatata-config";
 
-        const SOM_COMPLETE = "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMXGx8jJysvMzc7P0NHS09TV1tfY2drb3N3e3+Dh4uPk5ebn6Onq6+zt7u/w8fLz9PX29/j5+vv8/f7/AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==";
+        const CONFIG_PADRAO = { foco: 25, pausaCurta: 5, pausaLonga: 15, ciclo: 4 };
+        const LIMITES = { foco: [1, 120], pausaCurta: [1, 120], pausaLonga: [1, 120], ciclo: [1, 12] };
 
-        let tempoRestante = TEMPO_POMODORO;
-        let tempoTotal = TEMPO_POMODORO;
+        const PERIODOS = {
+            "trabalho": { chave: "foco", emoji: "🍅", rotulo: "Foco total! Trabalhe por" },
+            "pausa-curta": { chave: "pausaCurta", emoji: "☕", rotulo: "Pausa curta! Descanse por" },
+            "pausa-longa": { chave: "pausaLonga", emoji: "⏰", rotulo: "Pausa longa! Descanse por" }
+        };
+        const FASES = ["parado", "rodando", "pausado"];
+        const CONTEXTOS = ["inicio", "pos-foco", "pos-pausa"];
+
+        const ICONE = "data:image/svg+xml," + encodeURIComponent(
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🍅</text></svg>"
+        );
+
+        let config = { ...CONFIG_PADRAO };
+        let periodo = "trabalho";  // trabalho, pausa-curta, pausa-longa
+        let fase = "parado";       // parado, rodando, pausado
+        let contexto = "inicio";   // como chegamos neste período: inicio, pos-foco, pos-pausa
+        let tempoTotal = 0;
+        let restante = 0;
+        let fimPrevisto = null;
         let intervalo = null;
-        let emExecucao = false;
-        let emIntervalo = false;
         let pomodorosConcluidos = 0;
         let tempoFocadoHoje = 0;
-        let estado = "pronto"; // pronto, trabalho, pausa-curta, pausa-longa
-        let timestampInicio = null;
-        let tempoDecorridoAntes = 0;
+        let diaAtual = new Date().toDateString();
+        let audioCtx = null;
+        let confirmandoZerar = null;
 
         const timerDisplay = document.getElementById("timer");
         const statusDisplay = document.getElementById("status");
-        const progressBar = document.getElementById("progress");
+        const progressBar = document.getElementById("progress-bar");
+        const progressFill = document.getElementById("progress");
         const pomodoroCount = document.getElementById("pomodoro-count");
         const tomatoIcons = document.getElementById("tomato-icons");
         const statsDisplay = document.getElementById("stats");
         const btnIniciar = document.getElementById("btn-iniciar");
         const btnPausar = document.getElementById("btn-pausar");
+        const btnPular = document.getElementById("btn-pular");
         const btnReiniciar = document.getElementById("btn-reiniciar");
+        const btnZerar = document.getElementById("btn-zerar");
+        const inputsConfig = document.querySelectorAll("[data-config]");
+
+        document.getElementById("favicon").href = ICONE;
+
+        // ---------- armazenamento ----------
+
+        function lerJSON(chave) {
+            try {
+                const bruto = localStorage.getItem(chave);
+                return bruto ? JSON.parse(bruto) : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function gravarJSON(chave, valor) {
+            try {
+                localStorage.setItem(chave, JSON.stringify(valor));
+            } catch {
+                // armazenamento indisponível: o app segue funcionando sem persistir
+            }
+        }
+
+        function valorValido(chave, valor) {
+            const [min, max] = LIMITES[chave];
+            return Number.isInteger(valor) && valor >= min && valor <= max;
+        }
+
+        function carregarConfig() {
+            const salvo = lerJSON(CHAVE_CONFIG) || {};
+            for (const chave of Object.keys(CONFIG_PADRAO)) {
+                config[chave] = valorValido(chave, salvo[chave]) ? salvo[chave] : CONFIG_PADRAO[chave];
+            }
+        }
 
         function carregarDados() {
-            const dados = localStorage.getItem("tomatata-data");
-            if (!dados) return;
-
-            const parsed = JSON.parse(dados);
-            const hoje = new Date().toDateString();
-            if (parsed.data === hoje) {
-                pomodorosConcluidos = parsed.pomodoros || 0;
-                tempoFocadoHoje = parsed.tempoFocado || 0;
-                atualizarPomodoros();
-                atualizarStats();
+            const dados = lerJSON(CHAVE_DADOS);
+            if (dados && dados.data === diaAtual) {
+                pomodorosConcluidos = Number(dados.pomodoros) || 0;
+                tempoFocadoHoje = Number(dados.tempoFocado) || 0;
             }
         }
 
         function salvarDados() {
-            const dados = {
-                data: new Date().toDateString(),
-                pomodoros: pomodorosConcluidos,
-                tempoFocado: tempoFocadoHoje
-            };
-            localStorage.setItem("tomatata-data", JSON.stringify(dados));
+            gravarJSON(CHAVE_DADOS, { data: diaAtual, pomodoros: pomodorosConcluidos, tempoFocado: tempoFocadoHoje });
+        }
+
+        function garantirDia() {
+            const hoje = new Date().toDateString();
+            if (hoje === diaAtual) return;
+            diaAtual = hoje;
+            pomodorosConcluidos = 0;
+            tempoFocadoHoje = 0;
+            salvarDados();
+            atualizarPomodoros();
+            atualizarStats();
+        }
+
+        function salvarTimer() {
+            gravarJSON(CHAVE_TIMER, { periodo, fase, contexto, tempoTotal, restante, fimPrevisto });
+        }
+
+        function carregarTimer() {
+            const s = lerJSON(CHAVE_TIMER);
+            const valido = s
+                && PERIODOS[s.periodo]
+                && FASES.includes(s.fase)
+                && CONTEXTOS.includes(s.contexto)
+                && Number.isFinite(s.tempoTotal) && s.tempoTotal > 0
+                && Number.isFinite(s.restante) && s.restante >= 0 && s.restante <= s.tempoTotal
+                && (s.fase !== "rodando" || Number.isFinite(s.fimPrevisto));
+
+            if (!valido) {
+                definirPeriodo("trabalho", "inicio");
+                return;
+            }
+
+            periodo = s.periodo;
+            fase = s.fase;
+            contexto = s.contexto;
+            tempoTotal = s.tempoTotal;
+            restante = s.restante;
+            fimPrevisto = fase === "rodando" ? s.fimPrevisto : null;
+
+            if (fase !== "rodando") return;
+            if (fimPrevisto <= Date.now()) {
+                finalizarPeriodo({ silencioso: true });
+            } else {
+                calcularRestante();
+                intervalo = setInterval(tick, 250);
+            }
+        }
+
+        // ---------- som e notificações ----------
+
+        function desbloquearAudio() {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                audioCtx = audioCtx || new AudioContextClass();
+                if (audioCtx.state === "suspended") audioCtx.resume();
+            } catch (e) {
+                console.log("Áudio indisponível:", e);
+            }
+        }
+
+        function emitirSom() {
+            desbloquearAudio();
+            if (!audioCtx) return;
+            const inicio = audioCtx.currentTime + 0.02;
+            [660, 880, 1100].forEach((frequencia, i) => {
+                const t = inicio + i * 0.25;
+                const osc = audioCtx.createOscillator();
+                const ganho = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.value = frequencia;
+                ganho.gain.setValueAtTime(0.0001, t);
+                ganho.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+                ganho.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+                osc.connect(ganho).connect(audioCtx.destination);
+                osc.start(t);
+                osc.stop(t + 0.22);
+            });
         }
 
         function solicitarPermissaoNotificacao() {
@@ -254,195 +460,276 @@
         }
 
         function enviarNotificacao(titulo, corpo) {
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification(titulo, {
-                    body: corpo,
-                    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🍅</text></svg>",
-                    tag: "tomatata"
-                });
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            try {
+                new Notification(titulo, { body: corpo, icon: ICONE, tag: "tomatata", renotify: true });
+            } catch (e) {
+                console.log("Erro ao enviar notificação:", e);
             }
         }
 
-        function emitirSom() {
-            const audio = new Audio(SOM_COMPLETE);
-            audio.volume = 0.5;
-            audio.play().catch(e => console.log("Erro ao reproduzir som:", e));
+        // ---------- interface ----------
+
+        function minutos(segundos) {
+            return Math.round(segundos / 60);
+        }
+
+        function duracaoDe(nomePeriodo) {
+            return config[PERIODOS[nomePeriodo].chave] * 60;
+        }
+
+        function temaAtual() {
+            return fase === "parado" && contexto === "inicio" ? "pronto" : periodo;
+        }
+
+        function statusTexto() {
+            if (fase === "pausado") return "⏸️ Pausado";
+            if (fase === "parado" && contexto === "inicio") return "Pronto para começar";
+            if (fase === "parado" && contexto === "pos-pausa") return "✅ Intervalo concluído! Pronto para trabalhar?";
+            const { emoji, rotulo } = PERIODOS[periodo];
+            return `${emoji} ${rotulo} ${minutos(tempoTotal)} minutos`;
         }
 
         function atualizarTimer() {
-            const minutos = Math.floor(tempoRestante / 60);
-            const segundos = tempoRestante % 60;
-            const tempoFormatado = `${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+            const min = Math.floor(restante / 60);
+            const seg = restante % 60;
+            const tempoFormatado = `${String(min).padStart(2, "0")}:${String(seg).padStart(2, "0")}`;
             timerDisplay.textContent = tempoFormatado;
             document.title = `TOMATATA - ${tempoFormatado}`;
 
-            const progresso = ((tempoTotal - tempoRestante) / tempoTotal) * 100;
-            progressBar.style.width = `${progresso}%`;
-        }
-
-        function calcularTempoRestante() {
-            if (!timestampInicio) return;
-            const agora = Date.now();
-            const tempoDecorrido = Math.floor((agora - timestampInicio) / 1000) + tempoDecorridoAntes;
-            tempoRestante = tempoTotal - tempoDecorrido;
-            if (tempoRestante < 0) tempoRestante = 0;
-        }
-
-        function atualizarStatus(texto) {
-            statusDisplay.textContent = texto;
+            const progresso = ((tempoTotal - restante) / tempoTotal) * 100;
+            progressFill.style.width = `${progresso}%`;
+            progressBar.setAttribute("aria-valuenow", Math.round(progresso));
         }
 
         function atualizarPomodoros() {
+            const cheios = periodo === "pausa-longa" ? config.ciclo : pomodorosConcluidos % config.ciclo;
             pomodoroCount.textContent = pomodorosConcluidos;
-            tomatoIcons.innerHTML = "";
-            for (let i = 0; i < POMODOROS_PAUSA_LONGA; i++) {
+
+            while (tomatoIcons.children.length < config.ciclo) {
                 const tomato = document.createElement("span");
                 tomato.className = "tomato";
                 tomato.textContent = "🍅";
-                if (i < pomodorosConcluidos % POMODOROS_PAUSA_LONGA) {
-                    tomato.classList.add("completed");
-                }
                 tomatoIcons.appendChild(tomato);
             }
+            while (tomatoIcons.children.length > config.ciclo) {
+                tomatoIcons.lastChild.remove();
+            }
+            Array.from(tomatoIcons.children).forEach((tomato, i) => {
+                tomato.classList.toggle("completed", i < cheios);
+            });
+            tomatoIcons.setAttribute("aria-label", `${cheios} de ${config.ciclo} pomodoros do ciclo`);
         }
 
         function atualizarStats() {
             const horas = Math.floor(tempoFocadoHoje / 60);
-            const minutos = tempoFocadoHoje % 60;
-            const textoTempo = horas > 0 ? `${horas}h ${minutos}min` : `${minutos} min`;
+            const mins = tempoFocadoHoje % 60;
+            const textoTempo = horas > 0 ? `${horas}h ${mins}min` : `${mins} min`;
             statsDisplay.textContent = `Tempo total focado hoje: ${textoTempo}`;
         }
 
-        function atualizarTema(novoEstado) {
-            document.body.className = novoEstado;
-            estado = novoEstado;
+        function atualizarBotoes() {
+            btnIniciar.textContent = fase === "pausado" ? "Continuar" : "Iniciar";
+            btnIniciar.disabled = fase === "rodando";
+            btnPausar.disabled = fase !== "rodando";
         }
 
-        function atualizarBotoes() {
-            if (emExecucao) {
-                btnIniciar.disabled = true;
-                btnPausar.disabled = false;
-                btnReiniciar.disabled = false;
+        function render() {
+            document.body.className = temaAtual();
+            const texto = statusTexto();
+            if (statusDisplay.textContent !== texto) statusDisplay.textContent = texto;
+            atualizarTimer();
+            atualizarPomodoros();
+            atualizarBotoes();
+        }
+
+        // ---------- ciclo do timer ----------
+
+        function definirPeriodo(novoPeriodo, novoContexto) {
+            periodo = novoPeriodo;
+            contexto = novoContexto;
+            fase = "parado";
+            tempoTotal = duracaoDe(periodo);
+            restante = tempoTotal;
+            fimPrevisto = null;
+        }
+
+        function pararTick() {
+            clearInterval(intervalo);
+            intervalo = null;
+        }
+
+        function calcularRestante() {
+            if (fase === "rodando") {
+                restante = Math.max(0, Math.ceil((fimPrevisto - Date.now()) / 1000));
+            }
+        }
+
+        function tick() {
+            calcularRestante();
+            if (restante <= 0) {
+                finalizarPeriodo();
             } else {
-                btnIniciar.disabled = false;
-                btnPausar.disabled = true;
-                btnReiniciar.disabled = false;
+                atualizarTimer();
             }
         }
 
         function iniciarPomodoro() {
-            if (emExecucao) return;
-
-            emExecucao = true;
+            if (fase === "rodando") return;
+            desbloquearAudio();
             solicitarPermissaoNotificacao();
 
-            if (!emIntervalo && estado === "pronto") {
-                atualizarTema("trabalho");
-                atualizarStatus("🍅 Foco total! Trabalhe por 25 minutos");
-            }
-
-            timestampInicio = Date.now();
-            atualizarBotoes();
-
-            intervalo = setInterval(() => {
-                calcularTempoRestante();
-                if (tempoRestante > 0) {
-                    atualizarTimer();
-                } else {
-                    finalizarPeriodo();
-                }
-            }, 1000);
+            fimPrevisto = Date.now() + restante * 1000;
+            fase = "rodando";
+            intervalo = setInterval(tick, 250);
+            salvarTimer();
+            render();
         }
 
         function pausarPomodoro() {
-            if (!emExecucao) return;
+            if (fase !== "rodando") return;
+            calcularRestante();
+            pararTick();
+            fimPrevisto = null;
+            fase = "pausado";
+            salvarTimer();
+            render();
+        }
 
-            clearInterval(intervalo);
-            intervalo = null;
-            emExecucao = false;
-
-            if (timestampInicio) {
-                const agora = Date.now();
-                tempoDecorridoAntes += Math.floor((agora - timestampInicio) / 1000);
-                timestampInicio = null;
-            }
-
-            atualizarStatus("⏸️ Pausado");
-            atualizarBotoes();
+        function alternarPomodoro() {
+            if (fase === "rodando") pausarPomodoro();
+            else iniciarPomodoro();
         }
 
         function reiniciarPomodoro() {
-            clearInterval(intervalo);
-            intervalo = null;
-            emExecucao = false;
-            emIntervalo = false;
-            tempoRestante = TEMPO_POMODORO;
-            tempoTotal = TEMPO_POMODORO;
-            timestampInicio = null;
-            tempoDecorridoAntes = 0;
-            atualizarTema("pronto");
-            atualizarStatus("Pronto para começar");
-            atualizarTimer();
-            atualizarBotoes();
+            pararTick();
+            definirPeriodo("trabalho", "inicio");
+            salvarTimer();
+            render();
         }
 
-        function finalizarPeriodo() {
-            clearInterval(intervalo);
-            intervalo = null;
-            emExecucao = false;
-            timestampInicio = null;
-            tempoDecorridoAntes = 0;
-            emitirSom();
+        function pularPeriodo() {
+            finalizarPeriodo({ pulado: true });
+        }
 
-            if (!emIntervalo) {
-                pomodorosConcluidos++;
-                tempoFocadoHoje += 25;
-                atualizarPomodoros();
-                atualizarStats();
-                salvarDados();
+        function finalizarPeriodo({ pulado = false, silencioso = false } = {}) {
+            pararTick();
 
-                if (pomodorosConcluidos % POMODOROS_PAUSA_LONGA === 0) {
-                    tempoRestante = TEMPO_PAUSA_LONGA;
-                    tempoTotal = TEMPO_PAUSA_LONGA;
-                    atualizarTema("pausa-longa");
-                    atualizarStatus("⏰ Pausa longa! Descanse por 15 minutos");
-                    enviarNotificacao("⏰ Parabéns!", `Você completou ${POMODOROS_PAUSA_LONGA} Pomodoros! Descanse por 15 minutos.`);
-                } else {
-                    tempoRestante = TEMPO_PAUSA_CURTA;
-                    tempoTotal = TEMPO_PAUSA_CURTA;
-                    atualizarTema("pausa-curta");
-                    atualizarStatus("☕ Pausa curta! Descanse por 5 minutos");
-                    enviarNotificacao("✅ Pomodoro concluído!", "Faça uma pausa de 5 minutos.");
+            if (periodo === "trabalho") {
+                if (!pulado) {
+                    garantirDia();
+                    pomodorosConcluidos++;
+                    tempoFocadoHoje += minutos(tempoTotal);
+                    salvarDados();
+                    atualizarStats();
                 }
-                emIntervalo = true;
+                const pausaLonga = !pulado && pomodorosConcluidos % config.ciclo === 0;
+                definirPeriodo(pausaLonga ? "pausa-longa" : "pausa-curta", "pos-foco");
             } else {
-                tempoRestante = TEMPO_POMODORO;
-                tempoTotal = TEMPO_POMODORO;
-                emIntervalo = false;
-                atualizarTema("trabalho");
-                atualizarStatus("✅ Intervalo concluído! Pronto para trabalhar?");
-                enviarNotificacao("🔔 Intervalo concluído!", "Hora de voltar ao trabalho!");
+                definirPeriodo("trabalho", "pos-pausa");
             }
 
-            atualizarTimer();
-            atualizarBotoes();
+            if (!pulado && !silencioso) {
+                emitirSom();
+                if (periodo === "pausa-longa") {
+                    enviarNotificacao("⏰ Parabéns!", `Você completou ${config.ciclo} Pomodoros! Descanse por ${minutos(tempoTotal)} minutos.`);
+                } else if (periodo === "pausa-curta") {
+                    enviarNotificacao("✅ Pomodoro concluído!", `Faça uma pausa de ${minutos(tempoTotal)} minutos.`);
+                } else {
+                    enviarNotificacao("🔔 Intervalo concluído!", "Hora de voltar ao trabalho!");
+                }
+            }
+
+            salvarTimer();
+            render();
         }
 
-        document.addEventListener("visibilitychange", () => {
-            if (!document.hidden && emExecucao) {
-                calcularTempoRestante();
-                atualizarTimer();
-                if (tempoRestante <= 0) {
-                    finalizarPeriodo();
-                }
+        // ---------- configurações ----------
+
+        function preencherInputs() {
+            inputsConfig.forEach(input => { input.value = config[input.dataset.config]; });
+        }
+
+        function aplicarConfig() {
+            if (fase === "parado") {
+                tempoTotal = duracaoDe(periodo);
+                restante = tempoTotal;
+                salvarTimer();
+            }
+            render();
+        }
+
+        inputsConfig.forEach(input => {
+            input.addEventListener("change", () => {
+                const chave = input.dataset.config;
+                const [min, max] = LIMITES[chave];
+                let valor = Math.round(Number(input.value));
+                if (input.value === "" || !Number.isFinite(valor)) valor = config[chave];
+                valor = Math.min(max, Math.max(min, valor));
+                input.value = valor;
+                config[chave] = valor;
+                gravarJSON(CHAVE_CONFIG, config);
+                aplicarConfig();
+            });
+        });
+
+        btnZerar.addEventListener("click", () => {
+            if (!confirmandoZerar) {
+                btnZerar.textContent = "Clique de novo para confirmar";
+                confirmandoZerar = setTimeout(restaurarBotaoZerar, 3000);
+                return;
+            }
+            pomodorosConcluidos = 0;
+            tempoFocadoHoje = 0;
+            salvarDados();
+            atualizarStats();
+            atualizarPomodoros();
+            restaurarBotaoZerar();
+        });
+
+        function restaurarBotaoZerar() {
+            clearTimeout(confirmandoZerar);
+            confirmandoZerar = null;
+            btnZerar.textContent = "Zerar estatísticas de hoje";
+        }
+
+        // ---------- eventos ----------
+
+        btnIniciar.addEventListener("click", iniciarPomodoro);
+        btnPausar.addEventListener("click", pausarPomodoro);
+        btnPular.addEventListener("click", pularPeriodo);
+        btnReiniciar.addEventListener("click", reiniciarPomodoro);
+
+        document.addEventListener("keydown", (e) => {
+            if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+            const alvo = e.target instanceof Element ? e.target : document.body;
+            if (alvo.closest("input, textarea, select")) return;
+
+            if (e.key === " ") {
+                if (alvo.closest("button, summary, a")) return;
+                e.preventDefault();
+                alternarPomodoro();
+            } else if (e.key.toLowerCase() === "r") {
+                reiniciarPomodoro();
+            } else if (e.key.toLowerCase() === "s") {
+                pularPeriodo();
             }
         });
 
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) return;
+            garantirDia();
+            if (fase === "rodando") tick();
+        });
+
+        // ---------- inicialização ----------
+
+        carregarConfig();
+        preencherInputs();
         carregarDados();
-        atualizarTimer();
-        atualizarPomodoros();
+        carregarTimer();
         atualizarStats();
-        atualizarBotoes();
+        render();
     </script>
 </body>
 </html>
