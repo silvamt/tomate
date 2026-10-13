@@ -211,7 +211,13 @@
             gap: 12px;
         }
 
-        .config-grid input {
+        .config-grid input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--roxo);
+        }
+
+        .config-grid input[type="number"] {
             width: 76px;
             padding: 6px 8px;
             font-size: 15px;
@@ -275,6 +281,8 @@
                 <label>Pausa curta (min) <input type="number" data-config="pausaCurta" min="1" max="120" inputmode="numeric"></label>
                 <label>Pausa longa (min) <input type="number" data-config="pausaLonga" min="1" max="120" inputmode="numeric"></label>
                 <label>Pomodoros até a pausa longa <input type="number" data-config="ciclo" min="1" max="12" inputmode="numeric"></label>
+                <label>Iniciar pausas automaticamente <input type="checkbox" data-config="autoPausa"></label>
+                <label>Iniciar foco automaticamente <input type="checkbox" data-config="autoFoco"></label>
             </div>
             <button type="button" id="btn-zerar" class="secundario">Zerar estatísticas de hoje</button>
         </details>
@@ -287,7 +295,7 @@
         const CHAVE_TIMER = "tomatata-timer";
         const CHAVE_CONFIG = "tomatata-config";
 
-        const CONFIG_PADRAO = { foco: 25, pausaCurta: 5, pausaLonga: 15, ciclo: 4 };
+        const CONFIG_PADRAO = { foco: 25, pausaCurta: 5, pausaLonga: 15, ciclo: 4, autoPausa: false, autoFoco: false };
         const LIMITES = { foco: [1, 120], pausaCurta: [1, 120], pausaLonga: [1, 120], ciclo: [1, 12] };
 
         const PERIODOS = {
@@ -353,6 +361,7 @@
         }
 
         function valorValido(chave, valor) {
+            if (typeof CONFIG_PADRAO[chave] === "boolean") return typeof valor === "boolean";
             const [min, max] = LIMITES[chave];
             return Number.isInteger(valor) && valor >= min && valor <= max;
         }
@@ -675,12 +684,20 @@
 
             salvarTimer();
             render();
+
+            // início automático só no fim natural do período (não ao pular nem ao restaurar um vencido)
+            const inicioAutomatico = periodo === "trabalho" ? config.autoFoco : config.autoPausa;
+            if (!pulado && !silencioso && inicioAutomatico) iniciarPomodoro();
         }
 
         // ---------- configurações ----------
 
         function preencherInputs() {
-            inputsConfig.forEach(input => { input.value = config[input.dataset.config]; });
+            inputsConfig.forEach(input => {
+                const valor = config[input.dataset.config];
+                if (input.type === "checkbox") input.checked = valor;
+                else input.value = valor;
+            });
         }
 
         function aplicarConfig() {
@@ -695,6 +712,11 @@
         inputsConfig.forEach(input => {
             input.addEventListener("change", () => {
                 const chave = input.dataset.config;
+                if (input.type === "checkbox") {
+                    config[chave] = input.checked;
+                    gravarJSON(CHAVE_CONFIG, config);
+                    return;
+                }
                 const [min, max] = LIMITES[chave];
                 let valor = Math.round(Number(input.value));
                 if (input.value === "" || !Number.isFinite(valor)) valor = config[chave];
