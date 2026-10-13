@@ -48,6 +48,7 @@ Nenhuma.
   - Recarregar: checkboxes voltam marcados e salvos em `tomatata-config`. OK.
   - Console: sem erros (a leitura começou depois do carregamento da página; erros de carga não foram capturados, mas os testes rodaram sem exceções).
 - Nota: o teste não mediu o comportamento em aba realmente oculta (ver ticket 001).
+- 2026-10-13 — A pedido do usuário, `autoPausa` e `autoFoco` passam a ser `true` por padrão em `CONFIG_PADRAO` (o "desligadas por padrão" acima ficou superado; ver `DECISIONS.md`). Só `node --check` foi rodado depois da mudança; o caminho de código é o mesmo já testado, mudou apenas o valor padrão.
 
 ## Questões pendentes
 Nenhuma.
