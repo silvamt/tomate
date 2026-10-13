@@ -42,10 +42,17 @@ Nenhuma.
 - 2026-10-13 10:35 — Ticket criado e reservado.
 - 2026-10-13 — Implementado em `index.html`: `agendarAlarme`/`cancelarAlarme` (chamado em `pararTick`), `desbloquearAudio` devolve promessa, `iniciarPomodoro` agenda o alarme após liberar o áudio, `carregarTimer` libera o áudio no primeiro `pointerdown`/`keydown`, `silencioso` suprime só o som. `CLAUDE.md` e `DECISIONS.md` atualizados.
 - Verificação feita: sintaxe do `<script>` extraído conferida com `node --check` (OK).
-- Verificação NÃO feita: teste no navegador (aba oculta, recarga com timer rodando, aba fechada, pausar/pular/reiniciar).
+- 2026-10-13 — Testes no Chrome (servidor local `python -m http.server` em 127.0.0.1:8765, já encerrado; foco/pausas = 1 min; `finalizarPeriodo` e `emitirSom` instrumentados):
+  - Fim normal com clique real em Iniciar: áudio `running`, alarme agendado; fim 2 ms após `fimPrevisto`, com som. OK.
+  - Alarme isolado: com o `setInterval` cancelado por JS, o período terminou sozinho 30 ms após `fimPrevisto`, com som. OK.
+  - Pausar, pular e reiniciar: `alarme` volta a `null` em todos; nenhum aviso extra no log. OK.
+  - Recarregar com o timer rodando: sem clique, `audioCtx` nulo e sem alarme; após um clique na página, áudio `running` e alarme agendado. OK.
+  - Período vencido restaurado (estado salvo com fim 2 min no passado, `carregarTimer()` com `Notification` e `emitirSom` simulados): notificação enviada, sem som, estado avançou para `pausa-curta`. OK (notificação simulada; não vi uma real).
+  - Console: nenhum erro.
+- Limitação: o Chrome automatizado manteve `document.hidden === false` mesmo com outra aba na frente, então o throttling real de aba oculta (inclusive o de 1×/min depois de 5 min) NÃO foi reproduzido. O teste do alarme isolado cobre o mecanismo, não o ganho medido.
 
 ## Questões pendentes
-Teste manual no navegador dos critérios de conclusão.
+Confirmar na prática, com a aba realmente em segundo plano (outra janela, ou minimizada) por mais de 5 min, que o aviso sai no horário.
 
 ## Próximo passo
-Testar no navegador (foco = 1 min, trocar de aba; depois foco = 7 min oculto) e, se passar, mudar para `done`.
+Usuário usar o app em uso real por um dia (foco normal, aba em segundo plano); se o aviso sair no horário, mudar para `done`.
