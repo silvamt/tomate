@@ -314,6 +314,7 @@
         let tempoFocadoHoje = 0;
         let diaAtual = new Date().toDateString();
         let audioCtx = null;
+        let alarme = null;
         let confirmandoZerar = null;
 
         const timerDisplay = document.getElementById("timer");
@@ -418,20 +419,50 @@
             } else {
                 calcularRestante();
                 intervalo = setInterval(tick, 250);
+                // sem gesto do usuário o navegador mantém o áudio suspenso: libera no primeiro toque
+                const liberar = () => desbloquearAudio().then(agendarAlarme);
+                document.addEventListener("pointerdown", liberar, { once: true });
+                document.addEventListener("keydown", liberar, { once: true });
             }
         }
 
         // ---------- som e notificações ----------
 
+        // devolve uma promessa que se resolve quando o contexto já foi tentado liberar (nunca rejeita)
         function desbloquearAudio() {
             try {
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
+                if (!AudioContextClass) return Promise.resolve();
                 audioCtx = audioCtx || new AudioContextClass();
-                if (audioCtx.state === "suspended") audioCtx.resume();
+                if (audioCtx.state === "suspended") return audioCtx.resume().catch(() => {});
             } catch (e) {
                 console.log("Áudio indisponível:", e);
             }
+            return Promise.resolve();
+        }
+
+        // O relógio do Web Audio não sofre o throttling dos timers em aba oculta:
+        // um oscilador mudo, programado para parar no fim previsto, chama tick() no onended.
+        function cancelarAlarme() {
+            if (!alarme) return;
+            alarme.onended = null;
+            try { alarme.stop(); } catch {}
+            alarme.disconnect();
+            alarme = null;
+        }
+
+        function agendarAlarme() {
+            cancelarAlarme();
+            if (fase !== "rodando" || !audioCtx || audioCtx.state !== "running") return;
+            const segundos = Math.max(0, (fimPrevisto - Date.now()) / 1000);
+            const osc = audioCtx.createOscillator();
+            const ganho = audioCtx.createGain();
+            ganho.gain.value = 0;
+            osc.connect(ganho).connect(audioCtx.destination);
+            osc.onended = tick;
+            osc.start();
+            osc.stop(audioCtx.currentTime + segundos + 0.05);
+            alarme = osc;
         }
 
         function emitirSom() {
@@ -557,6 +588,7 @@
         function pararTick() {
             clearInterval(intervalo);
             intervalo = null;
+            cancelarAlarme();
         }
 
         function calcularRestante() {
@@ -576,12 +608,13 @@
 
         function iniciarPomodoro() {
             if (fase === "rodando") return;
-            desbloquearAudio();
+            const audioPronto = desbloquearAudio();
             solicitarPermissaoNotificacao();
 
             fimPrevisto = Date.now() + restante * 1000;
             fase = "rodando";
             intervalo = setInterval(tick, 250);
+            audioPronto.then(agendarAlarme);
             salvarTimer();
             render();
         }
@@ -629,8 +662,8 @@
                 definirPeriodo("trabalho", "pos-pausa");
             }
 
-            if (!pulado && !silencioso) {
-                emitirSom();
+            if (!pulado) {
+                if (!silencioso) emitirSom();
                 if (periodo === "pausa-longa") {
                     enviarNotificacao("⏰ Parabéns!", `Você completou ${config.ciclo} Pomodoros! Descanse por ${minutos(tempoTotal)} minutos.`);
                 } else if (periodo === "pausa-curta") {
